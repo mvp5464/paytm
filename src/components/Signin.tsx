@@ -2,9 +2,12 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Label } from "@radix-ui/react-label";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import React, { useRef, useState } from "react";
+import { Toaster, toast } from "sonner";
+// import { Label } from "./ui/label";
 
 const Signin = () => {
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
@@ -37,6 +40,7 @@ const Signin = () => {
     }
 
     // Then Try sigin in
+    // { email.current.length>3 &&}
     const res = await signIn("credentials", {
       username: email.current,
       password: password.current,
@@ -49,12 +53,12 @@ const Signin = () => {
     } else {
       console.log("err");
       signInErr.current = true;
-      // toast('Error Signing in', {
-      //   action: {
-      //     label: 'Close',
-      //     onClick: () => toast.dismiss(),
-      //   },
-      // });
+      toast("Error Signing in", {
+        action: {
+          label: "Close",
+          onClick: () => toast.dismiss(),
+        },
+      });
     }
   };
   return (
@@ -66,7 +70,8 @@ const Signin = () => {
         <CardContent>
           <div className="grid w-full items-center gap-4">
             <div className="flex flex-col gap-4">
-              <div>Email</div>
+              <Label htmlFor="email">Email</Label>
+              {/* lable means when click on this text it highlight to input [htmlFor (for label) == name (for inputbox)] */}
               <Input
                 name="email"
                 id="email"
@@ -84,7 +89,8 @@ const Signin = () => {
               )}
             </div>
             <div className="flex flex-col gap-4">
-              <div>Password</div>
+              <Label htmlFor="password">Password</Label>
+
               <div className="flex border rounded-lg">
                 <Input
                   className="border-0"
@@ -161,6 +167,7 @@ const Signin = () => {
           )}
         </CardContent>
       </Card>
+      <Toaster />
     </section>
   );
 };
