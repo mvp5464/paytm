@@ -41,16 +41,18 @@ const Signin = () => {
 
     // Then Try sigin in
     // { email.current.length>3 &&}
+    console.log(email.current, "andddd", password.current);
     const res = await signIn("credentials", {
-      username: email.current,
+      number: +email.current,
       password: password.current,
-      // redirect: false, //abc123
+      redirect: false, //abc123
     });
 
     // If ok then go to dashboard else show error
     if (!res?.error) {
       router.push("/");
     } else {
+      console.log(res);
       console.log("err");
       signInErr.current = true;
       toast("Error Signing in", {
@@ -70,12 +72,12 @@ const Signin = () => {
         <CardContent>
           <div className="grid w-full items-center gap-4">
             <div className="flex flex-col gap-4">
-              <Label htmlFor="email">Email</Label>
-              {/* lable means when click on this text it highlight to input [htmlFor (for label) == name (for inputbox)] */}
+              <Label htmlFor="phone">Phone number</Label>
+              {/* lable means when click on this text it highlight to input [htmlFor (for label) == id (for inputbox)] */}
               <Input
-                name="email"
-                id="email"
-                placeholder="name@email.com"
+                name="phone1"
+                id="phone"
+                placeholder="1234567890"
                 onChange={(e) => {
                   setRequiredError((prevState) => ({
                     ...prevState,
@@ -162,6 +164,7 @@ const Signin = () => {
           <Button className="my-3 w-full" onClick={handleSubmit}>
             Login
           </Button>
+          {JSON.stringify(email.current)}
           {signInErr.current && (
             <span className=" text-red-500">Error Signin</span>
           )}
@@ -173,3 +176,45 @@ const Signin = () => {
 };
 
 export default Signin;
+
+/////////////////////////////////////////////////////////
+
+// export default function () {
+//   const [values, setValues] = useState(0);
+//   const [values2, setValues2] = useState("");
+//   //   const number = useRef("");
+//   //   const password = useRef("");
+//   const router = useRouter();
+//   //   console.log(number.current);
+
+//   return (
+//     <div>
+//       <input type="text" onChange={(e) => setValues(+e.target.value)} />
+//       {JSON.stringify(values)}
+//       <br />
+
+//       <input
+//         type="password"
+//         onChange={(e) => setValues2(e.target.value)}
+//         // onChange={(e) => (password.current = e.target.value)}
+//       />
+//       <br />
+//       <button
+//         onClick={async () => {
+//           const res = await signIn("credentials", {
+//             number: values,
+//             password: values2,
+//             redirect: false,
+//           });
+//           console.log(res);
+//           router.push("/");
+//         }}
+//       >
+//         Login with email
+//       </button>
+//       {JSON.stringify(values)}
+//       {1}
+//       {JSON.stringify(values2)}
+//     </div>
+//   );
+// }

@@ -4,7 +4,12 @@
 // -- Then pass this Providers function with some children inside the layout.tsx
 
 import { SessionProvider } from "next-auth/react";
+import { RecoilRoot } from "recoil";
 
 export function Providers({ children }: { children: React.ReactNode }) {
-  return <SessionProvider>{children}</SessionProvider>;
+  return (
+    <RecoilRoot>
+      <SessionProvider>{children}</SessionProvider>;
+    </RecoilRoot>
+  );
 }

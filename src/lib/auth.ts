@@ -1,63 +1,83 @@
+// import db from "@repo/db/client";
+import db from "../db";
 import CredentialsProvider from "next-auth/providers/credentials";
-import GoogleProvider from "next-auth/providers/google";
-import GitHubProvider from "next-auth/providers/github";
+import bcrypt from "bcrypt";
 
 export const NEXT_AUTH = {
-  // Add providers here -- Mainly 3 types 1> OAuth (Login with google,fb,github) 2> Email (passwordless email login via email OTP) 3> Credentials (Your own strategy)
   providers: [
     CredentialsProvider({
-      name: "Email",
+      name: "Credentials",
       credentials: {
-        username: { label: "email", type: "text", placeholder: "Your Email" },
-        password: {
-          label: "password",
-          type: "password",
-          placeholder: "Your password",
+        phone: {
+          label: "Phone number",
+          type: "text",
+          placeholder: "1231231231",
+          required: true,
         },
+        password: { label: "Password", type: "password", required: true },
       },
-      async authorize(credentials: any) {
+      // TODO: User credentials type from next-aut
+      async authorize(credentials: any): Promise<any> {
         console.log(credentials);
-        return {
-          id: "user1",
-          name: "Mahesh",
-          email: credentials.username, // It is showing but
-          username: credentials.username, // It is not showing
+        // Do zod validation, OTP validation here
+        const hashedPassword = await bcrypt.hash(credentials.password, 10);
+        const existingUser = await db.user.findFirst({
+          where: {
+            number: +credentials.number,
+          },
+        });
+        console.log("existingUser");
+        console.log(existingUser);
+        if (existingUser) {
+          console.log(`Password from DB is ${existingUser.password}`);
+          console.log(`Raw user Password is ${credentials.password}`);
+          console.log(`hashed user password is ${hashedPassword}`);
+          const passwordValidation = await bcrypt.compare(
+            credentials.password,
+            existingUser.password
+          ); // both are different but the bcrypt.compare can check them both
+          console.log(passwordValidation);
+          if (passwordValidation) {
+            return {
+              id: existingUser.id.toString(),
+              name: existingUser.name,
+              number: existingUser.number,
+            };
+          }
+          return null;
+        }
 
-          //   if I write "n" then it show me name option same for email but not for username (how it knows) -- Ans from type.ts (id,name,email,image)
-        };
+        try {
+          const user = await db.user.create({
+            data: {
+              number: +credentials.number,
+              password: hashedPassword,
+            },
+          });
+
+          return {
+            id: user.id.toString(),
+            name: user.name,
+            number: user.number,
+          };
+        } catch (e) {
+          console.error(e);
+        }
+
+        return null;
       },
-    }),
-    GoogleProvider({
-      clientId: process.env.GOOGLE_CLIENT_ID || "",
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET || "",
-    }),
-    GitHubProvider({
-      clientId: process.env.GITHUB_ID || "",
-      clientSecret: process.env.GITHUB_SECRET || "",
     }),
   ],
-  secret: process.env.NEXTAUTH_URL,
-  //   // Callbacks are optional
+  secret: process.env.JWT_SECRET || "secret",
   callbacks: {
-    // jwt is not needed
-    jwt: ({ token, user }: any) => {
-      console.log(token);
-      token.userid = token.sub;
-      token.name = "mahesh2"; // You can edit it here (any name coming from frontend)
+    // TODO: can u fix the type here? Using any is bad
+    async session({ token, session }: any) {
+      session.user.id = token.sub;
 
-      return token;
-    },
-    // It will add id to the client side server (so we can see id along with name and email)
-    session: ({ session, token, user }: any) => {
-      console.log(session);
-      if (session && session.user) {
-        session.user.idOK1 = token.sub;
-      }
       return session;
     },
   },
   pages: {
-    // So when any error occures then it goes to custom signin page
     signIn: "/signin",
   },
 };
